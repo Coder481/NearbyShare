@@ -2,7 +2,12 @@ package com.hrithik.nearbyshare.helpers
 
 import android.content.Context
 import android.database.Cursor
+import android.os.Environment
 import android.provider.MediaStore
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+
 
 object FilesFetcher {
 
@@ -33,5 +38,25 @@ object FilesFetcher {
         }
 
         return ArrayList(videoItemHashSet)
+    }
+
+    fun saveVideoFile(byteArray: ByteArray?){
+        byteArray?.let{
+            val myDir = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+                "ReceivedFile"
+            )
+
+            myDir.mkdirs()
+
+            try {
+                val fName = "${System.currentTimeMillis()}.mp4"
+                val fos = FileOutputStream(File(myDir, fName))
+                fos.write(it)
+                fos.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
     }
 }
