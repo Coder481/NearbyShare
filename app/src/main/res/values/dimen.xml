@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="et_radius">8dp</dimen>
+    <dimen name="btn_icon">20dp</dimen>
+    <dimen name="et_videoNumber_topMargin">8dp</dimen>
+    <dimen name="anim_cloudTransfer_topMargin">-8dp</dimen>
+</resources>

@@ -7,4 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="color_primary">#3958F6</color>
+
+    <color name="grey">#4C5454</color>
+    <color name="submitGreen">#366B38</color>
+    <color name="msgGreen">#04CA0C</color>
+    <color name="msgBlue">#0394F6</color>
+    <color name="errorRed">#F80404</color>
 </resources>

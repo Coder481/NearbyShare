@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">NearbyShare</string>
+    <string name="enter_video_number">Enter video number</string>
+    <string name="send">Send</string>
+    <string name="receive">Receive</string>
+    <string name="searching_for_connection">Searching for connection...</string>
 </resources>

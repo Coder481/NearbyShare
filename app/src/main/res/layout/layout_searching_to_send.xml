@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/anim_lottie"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:lottie_rawRes="@raw/anim_connection_searching"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        android:adjustViewBounds="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_searching"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/searching_for_connection"
+        app:layout_constraintStart_toStartOf="@id/anim_lottie"
+        app:layout_constraintEnd_toEndOf="@id/anim_lottie"
+        app:layout_constraintTop_toBottomOf="@id/anim_lottie"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_startTransfer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cornerRadius="30dp"
+        android:text="@string/send"
+        android:textSize="12sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/msgBlue"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_searching"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
