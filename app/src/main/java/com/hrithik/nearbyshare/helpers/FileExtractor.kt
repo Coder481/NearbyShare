@@ -6,14 +6,14 @@ import kotlin.collections.ArrayList
 
 object FileExtractor {
 
-    fun getNthVideoFile(context: Context, n:Int):File?{
-        val list = getSortedVideoFiles(context)
+    suspend fun getNthVideoFile(n:Int):File?{
+        val list = getSortedVideoFiles()
         if(n<=0 || n>list.size) return null
         return list[n-1]
     }
 
-    private fun getSortedVideoFiles(context : Context) :  MutableList<File>{
-        val filesList = FilesFetcher.fetchVideoFiles(context)
+    private suspend fun getSortedVideoFiles() :  MutableList<File>{
+        val filesList = FilesFetcher.fetchVideoFiles()
         return sortByDateFromLastToFirst(filesList)
     }
 

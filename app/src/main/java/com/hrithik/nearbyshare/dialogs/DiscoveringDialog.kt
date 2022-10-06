@@ -2,6 +2,7 @@ package com.hrithik.nearbyshare.dialogs
 
 import android.app.AlertDialog
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import com.google.android.gms.nearby.Nearby
@@ -11,10 +12,12 @@ import com.hrithik.nearbyshare.helpers.FilesFetcher
 
 class DiscoveringDialog(private val context : Context) {
 
+    private lateinit var dialog: AlertDialog
     private lateinit var b: LayoutSearchingToReceiveBinding
     private val connectionsClient: ConnectionsClient by lazy{ Nearby.getConnectionsClient(context)}
     lateinit var friendCodeName : String
     lateinit var friendEndpointId : String
+    lateinit var payload : Payload
 
     fun show(){
         b = LayoutSearchingToReceiveBinding.inflate(LayoutInflater.from(context))
@@ -24,7 +27,7 @@ class DiscoveringDialog(private val context : Context) {
             btnStartTransfer.visibility = View.GONE
         }
 
-        AlertDialog.Builder(context)
+        dialog = AlertDialog.Builder(context)
             .setView(b.root)
             .setCancelable(false)
             .show()
@@ -49,6 +52,9 @@ class DiscoveringDialog(private val context : Context) {
                 }
             }*/
             connectionsClient.acceptConnection(endpointId,payloadCallback)
+                .addOnFailureListener {
+                    b.tvSearching.text = it.localizedMessage ?: "Unknown connection error"
+                }
             friendCodeName = connectionInfo.endpointName
         }
 
@@ -79,24 +85,31 @@ class DiscoveringDialog(private val context : Context) {
         }
 
         override fun onDisconnected(endpointId: String) {
-//            Log.d(TAG, "onDisconnected: from friend")
-            // perform necessary clean up
+            b.tvSearching.text = "Connection disconnected"
         }
     }
 
     private val payloadCallback = object : PayloadCallback(){
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
-            if(payload.type == Payload.Type.BYTES)
-                FilesFetcher.saveVideoFile(payload.asBytes())
-            b.apply{
-                tvSearching.text = "Done"
-                btnStartTransfer.visibility =  View.GONE
-            }
+            if(payload.type == Payload.Type.FILE)
+                this@DiscoveringDialog.payload = payload
+
+            Log.e("DiscoveringDialog","Receiving Complete:${payload.asFile()?.asUri()}")
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
-            val sent = "File received: ${update.bytesTransferred/update.totalBytes * 100}%"
-            b.tvSearching.text = sent
+            val per = update.bytesTransferred/update.totalBytes * 100
+            val sent = "File received: $per%"
+            b.tvSearching.text = if(update.status == PayloadTransferUpdate.Status.SUCCESS) {
+                dialog.setCancelable(true)
+                FilesFetcher.saveFileFromUri(
+                    payload.asFile()?.asUri(),
+                    context
+                )
+                "Done"
+            } else "Received: ${update.bytesTransferred}bytes"
+
+            Log.d("DiscoveringDialog","-> Sending file:${update.bytesTransferred}bytes")
         }
     }
 
@@ -106,21 +119,19 @@ class DiscoveringDialog(private val context : Context) {
                 override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
                     b.apply {
                         tvSearching.text = info.endpointName
+                        animLottie.visibility = View.GONE
                         btnStartTransfer.apply {
                             visibility = View.VISIBLE
                             setOnClickListener {
-                                connectionsClient.requestConnection(
-                                    "CodeName:${context.packageName}",
-                                    endpointId,
-                                    connectionLifecycleCallback
-                                )
+                                requestConnection(endpointId)
+                                this.visibility = View.GONE
+                                b.tvSearching.text = "Sending request..."
                             }
                         }
                     }
                 }
 
                 override fun onEndpointLost(endpointId: String) {
-//                    Log.d(TAG, "onEndpointLost")
                     b.tvSearching.text = "Connection Lost"
                 }
 
@@ -128,5 +139,23 @@ class DiscoveringDialog(private val context : Context) {
         // Note: Discovery may fail. To keep this demo simple, we don't handle failures.
         connectionsClient.startDiscovery(context.packageName,endpointDiscoveryCallback,
             DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build())
+            .addOnFailureListener {
+                b.tvSearching.text = it.localizedMessage?:"Unknown error occurred"
+            }
+    }
+
+    private fun requestConnection(endpointId: String) {
+        connectionsClient.requestConnection(
+            "CodeName: ${context.packageName}",
+            endpointId,
+            connectionLifecycleCallback
+        )
+            .addOnSuccessListener {
+                Log.d("Discovering Dialog","Connection Requested Successfully")
+            }
+            .addOnFailureListener {
+                b.tvSearching.text = it.localizedMessage?:"Unknown error occurred"
+                Log.d("Discovering Dialog",it.localizedMessage?:"Unknown")
+            }
     }
 }
