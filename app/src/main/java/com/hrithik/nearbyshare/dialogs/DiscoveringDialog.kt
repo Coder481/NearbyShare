@@ -77,8 +77,11 @@ class DiscoveringDialog(private val context : Context) {
         }
     }
 
+    // Callback for payload shared
     private val payloadCallback = object : PayloadCallback(){
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
+            // save payload in a variable, so that when transfer
+            // succeed we can save payload as file in storage
             if(payload.type == Payload.Type.FILE)
                 this@DiscoveringDialog.payload = payload
 
@@ -86,6 +89,7 @@ class DiscoveringDialog(private val context : Context) {
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
+            // If file shared successfully show Done, and if not then show data transferred
             b.tvSearching.text = if(update.status == PayloadTransferUpdate.Status.SUCCESS) {
                 dialog.setCancelable(true)
                 FilesFetcher.saveFileFromUri(
@@ -98,6 +102,7 @@ class DiscoveringDialog(private val context : Context) {
         }
     }
 
+    // Start discovering connection
     private fun startDiscovery(){
         val endpointDiscoveryCallback:EndpointDiscoveryCallback =
             object:EndpointDiscoveryCallback(){

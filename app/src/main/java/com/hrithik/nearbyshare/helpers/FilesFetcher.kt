@@ -11,9 +11,12 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 
-
+/**
+ *  Helper class to get and save files from and in storage
+ */
 object FilesFetcher {
 
+    // Return list of all videos available
     fun fetchVideoFiles() : ArrayList<String>{
         val videoItemHashSet: HashSet<String> = HashSet()
         val projection = arrayOf(

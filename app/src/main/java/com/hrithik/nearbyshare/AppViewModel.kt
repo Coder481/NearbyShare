@@ -24,6 +24,7 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    // Start advertising the connection
     fun startAdvertising(
         connectionsClient: ConnectionsClient,
         connectionLifecycleCallback: ConnectionLifecycleCallback,

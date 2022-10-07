@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         ViewModelProvider(this)[AppViewModel::class.java]
     }
 
+    // Permissions array based on OS Version
     private val permissionsArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         arrayOf(
                 Manifest.permission.BLUETOOTH_ADVERTISE,
@@ -49,7 +50,9 @@ class MainActivity : AppCompatActivity() {
             } ?: kotlin.run { b.etVideoNumber.error = "File not found" }
         }
         b.btnSend.setOnClickListener {
+            // Check permission before performing action
             if(askPermissions()) return@setOnClickListener
+
             val str = b.etVideoNumber.text.toString()
             if(str.isEmpty()) {
                 b.etVideoNumber.error = "Invalid file number"
@@ -59,7 +62,9 @@ class MainActivity : AppCompatActivity() {
             vm.getNthFile(n)
         }
         b.btnReceive.setOnClickListener {
+            // Check permission before performing action
             if(askPermissions()) return@setOnClickListener
+
             DiscoveringDialog(this).show()
         }
     }
@@ -74,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    // Check permissions granted based on OS version
     private fun genPermissionsAreGranted(): Boolean {
         val res = (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                     && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)

@@ -43,7 +43,8 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
     // Callback for connecting to other devices
     private val connectionLifecycleCallback = object: ConnectionLifecycleCallback(){
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
-//            Log.d(TAG, "onConnectionInitiated: accepting connection")
+
+            // Accept connection with Discoverer
             vm.viewModelScope.launch {
                 b.apply{
                     animLottie.visibility = View.GONE
@@ -68,6 +69,7 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
 
+            // Connection setup with Discoverer, update UI according to the connection status
             vm.viewModelScope.launch{
                 when (result.status.statusCode) {
                     ConnectionsStatusCodes.STATUS_OK -> {
@@ -110,6 +112,7 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
         }
     }
 
+    // Callback for payload shared
     private val payloadCallback = object : PayloadCallback(){
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             // Not required as only sending payload, not receiving
@@ -117,6 +120,7 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
+            // If file shared successfully show Done, and if not then show data transferred
             b.tvSearching.text = if(update.status == PayloadTransferUpdate.Status.SUCCESS) {
                 dialog.setCancelable(true)
                 connectionEnd = true
