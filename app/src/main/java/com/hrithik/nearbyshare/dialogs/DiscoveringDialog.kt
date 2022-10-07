@@ -2,6 +2,7 @@ package com.hrithik.nearbyshare.dialogs
 
 import android.app.AlertDialog
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,9 +16,8 @@ class DiscoveringDialog(private val context : Context) {
     private lateinit var dialog: AlertDialog
     private lateinit var b: LayoutSearchingToReceiveBinding
     private val connectionsClient: ConnectionsClient by lazy{ Nearby.getConnectionsClient(context)}
-    lateinit var friendCodeName : String
-    lateinit var friendEndpointId : String
     lateinit var payload : Payload
+    var connectionEnd = false
 
     fun show(){
         b = LayoutSearchingToReceiveBinding.inflate(LayoutInflater.from(context))
@@ -37,55 +37,43 @@ class DiscoveringDialog(private val context : Context) {
 
 
 
-    // Callback for connecting to other devices: both the advertiser and the discoverer must
-    // implement this callback.
+    // Callback for connecting to other devices
     private val connectionLifecycleCallback = object: ConnectionLifecycleCallback(){
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
-//            Log.d(TAG, "onConnectionInitiated: accepting connection")
-            /*b.apply{
-                animLottie.visibility = View.GONE
-                tvSearching.text = endpointId
-                btnStartTransfer.apply{
-                    visibility = View.VISIBLE
-                    setOnClickListener {
-                    }
-                }
-            }*/
             connectionsClient.acceptConnection(endpointId,payloadCallback)
                 .addOnFailureListener {
+                    dialog.setCancelable(true)
                     b.tvSearching.text = it.localizedMessage ?: "Unknown connection error"
                 }
-            friendCodeName = connectionInfo.endpointName
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
 
             when (result.status.statusCode) {
                 ConnectionsStatusCodes.STATUS_OK -> {
-                    // We're connected! Can now start sending and receiving data.
-
                     // if you were discovery, you can stop
                     connectionsClient.stopDiscovery()
-
-                    friendEndpointId = endpointId
                 }
                 ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
                     // The connection was rejected by one or both sides.
                     b.tvSearching.text = "Connection rejected"
+                    dialog.setCancelable(true)
                 }
                 ConnectionsStatusCodes.STATUS_ERROR -> {
                     // The connection broke before it was able to be accepted.
                     b.tvSearching.text = result.status.statusMessage ?: "Unknown Error"
+                    dialog.setCancelable(true)
                 }
                 else -> {
                     // Unknown status code
                     b.tvSearching.text = "Unknown Error!"
+                    dialog.setCancelable(true)
                 }
             }
         }
 
         override fun onDisconnected(endpointId: String) {
-            b.tvSearching.text = "Connection disconnected"
+            if(!connectionEnd)b.tvSearching.text = "Connection disconnected"
         }
     }
 
@@ -98,18 +86,15 @@ class DiscoveringDialog(private val context : Context) {
         }
 
         override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
-            val per = update.bytesTransferred/update.totalBytes * 100
-            val sent = "File received: $per%"
             b.tvSearching.text = if(update.status == PayloadTransferUpdate.Status.SUCCESS) {
                 dialog.setCancelable(true)
                 FilesFetcher.saveFileFromUri(
-                    payload.asFile()?.asUri(),
-                    context
+                    payload
                 )
-                "Done"
-            } else "Received: ${update.bytesTransferred}bytes"
-
-            Log.d("DiscoveringDialog","-> Sending file:${update.bytesTransferred}bytes")
+                connectionEnd = true
+                connectionsClient.disconnectFromEndpoint(endpointId)
+                "Done\nConnection End"
+            } else "Received: ${(update.bytesTransferred)/1024}KB \nTotal: ${(update.totalBytes)/1024}KB"
         }
     }
 
@@ -136,7 +121,7 @@ class DiscoveringDialog(private val context : Context) {
                 }
 
             }
-        // Note: Discovery may fail. To keep this demo simple, we don't handle failures.
+
         connectionsClient.startDiscovery(context.packageName,endpointDiscoveryCallback,
             DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build())
             .addOnFailureListener {
@@ -146,7 +131,7 @@ class DiscoveringDialog(private val context : Context) {
 
     private fun requestConnection(endpointId: String) {
         connectionsClient.requestConnection(
-            "CodeName: ${context.packageName}",
+            "${Build.BRAND}: ${Build.MODEL}",
             endpointId,
             connectionLifecycleCallback
         )

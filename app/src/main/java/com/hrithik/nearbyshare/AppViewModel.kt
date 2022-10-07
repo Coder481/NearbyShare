@@ -1,5 +1,6 @@
 package com.hrithik.nearbyshare
 
+import android.os.Build
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -29,11 +30,9 @@ class AppViewModel : ViewModel() {
         b: LayoutSearchingToSendBinding
     ){
         viewModelScope.launch {
-            // Note: Advertising may fail. To keep this demo simple, we don't handle failures.
-            // Also we will demonstrate connectionLifecycleCallback later.
             val context = MyApp.getContext()
             connectionsClient.startAdvertising(
-                "CodeName:${context.packageName}",
+                "${Build.BRAND}: ${Build.MODEL}",
                 context.packageName,
                 connectionLifecycleCallback,
                 AdvertisingOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()

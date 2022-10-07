@@ -1,6 +1,5 @@
 package com.hrithik.nearbyshare.helpers
 
-import android.content.Context
 import java.io.File
 import kotlin.collections.ArrayList
 

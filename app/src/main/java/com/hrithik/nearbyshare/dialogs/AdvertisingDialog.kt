@@ -19,8 +19,7 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
     private lateinit var dialog: AlertDialog
     private lateinit var b: LayoutSearchingToSendBinding
     private val connectionsClient: ConnectionsClient by lazy{ Nearby.getConnectionsClient(context)}
-    lateinit var friendCodeName : String
-    lateinit var friendEndpointId : String
+    var connectionEnd = false
 
 
     fun show(){
@@ -41,8 +40,7 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
 
     }
 
-    // Callback for connecting to other devices: both the advertiser and the discoverer must
-    // implement this callback.
+    // Callback for connecting to other devices
     private val connectionLifecycleCallback = object: ConnectionLifecycleCallback(){
         override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
 //            Log.d(TAG, "onConnectionInitiated: accepting connection")
@@ -65,7 +63,6 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
                         }
                     }
                 }
-                friendCodeName = connectionInfo.endpointName
             }
         }
 
@@ -79,7 +76,6 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
                         // if you were advertising, you can stop
                         connectionsClient.stopAdvertising()
 
-                        friendEndpointId = endpointId
                         b.tvSearching.text = "Sending file..."
                         val pfd = context.contentResolver.openFileDescriptor(Uri.fromFile(file),"r")
                             ?: kotlin.run { b.tvSearching.text = "File not found"
@@ -110,24 +106,22 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
         }
 
         override fun onDisconnected(endpointId: String) {
-            b.tvSearching.text = "Connection disconnected"
+            if(!connectionEnd)b.tvSearching.text = "Connection disconnected"
         }
     }
 
     private val payloadCallback = object : PayloadCallback(){
-        override fun onPayloadReceived(p0: String, payload: Payload) {
+        override fun onPayloadReceived(endpointId: String, payload: Payload) {
             // Not required as only sending payload, not receiving
             Log.e("AdvertisingDialog","-> onPayloadReceived")
         }
 
-        override fun onPayloadTransferUpdate(p0: String, update: PayloadTransferUpdate) {
-            val sent = "File sent: ${(update.bytesTransferred/update.totalBytes) * 100}%"
+        override fun onPayloadTransferUpdate(endpointId: String, update: PayloadTransferUpdate) {
             b.tvSearching.text = if(update.status == PayloadTransferUpdate.Status.SUCCESS) {
                 dialog.setCancelable(true)
-//                connectionsClient.stopAllEndpoints()
-                "Done"
-            } else "Sent: ${update.bytesTransferred}bytes"
-            Log.d("AdvertisingDialog","-> Sending file:$sent")
+                connectionEnd = true
+                "Done\nConnection End"
+            } else "Sent: ${(update.bytesTransferred)/1024}KB \nTotal: ${(update.totalBytes)/1024}KB"
         }
     }
 
