@@ -1,5 +1,5 @@
 # NearbyShare
-### Application to share data offline within 2 android devices
+### Application to share data offline within 2 android devices - [Download APK](https://github.com/Coder481/NearbyShare/releases/download/v1.0/app-debug.apk)
 
 <!-- Download APK link here -->
 
@@ -76,19 +76,21 @@ private val requestPermissionLauncher = registerForActivityResult(ActivityResult
 ```
 * ### Handle transferring</br>
 I have made two dialogs to handle transferring files, Advertising(Sender) and Discovering(Receiver)</br>
-**Components involved in complete file transfer:**
+
+</br>**Components involved in complete file transfer:**
   * ConnectionClient - Manages connection between devices
   * ConnectionLifecycleCallback - Callback for connection between devices
   * PayloadCallback - Callback for payload shared
-  * Payload - The file/data that is going to be shared
-**Methods involved in callbacks:**
+  * Payload - The file/data that is going to be shared</br>
+
+</br>**Methods involved in callbacks:**
   * ConnectionLifecycleCallback
       * onConnectionInitiated() - Found a connection, can accept in this method
       * onConnectionResult() - Share status of connection, whether established or got any errors
       * onDisconnected() - When connection demolished
   * PayloadCallback
       * onPayloadReceived() - Received payload(file) transferred by sender. Save this payload in a variable for future use(not in case of sender)
-      * onPayloadTransferUpdate() - Share updates on payload transfer. When the status becomes SUCCESS, save the payload(saved in above method) in local storage
+      * onPayloadTransferUpdate() - Share updates on payload transfer. When the status becomes SUCCESS, save the payload(saved in above method) in local storage as file.
 
 ### Tip
 * If you want to demolished connection just after successfully file transfer, then do it only Discoverer(receiver) side because doing it on Advertiser(Sender) side will disconnect connection before receiver receives complete file.
