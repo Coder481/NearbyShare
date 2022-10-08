@@ -92,7 +92,7 @@ class DiscoveringDialog(private val context : Context) {
             // If file shared successfully show Done, and if not then show data transferred
             b.tvSearching.text = if(update.status == PayloadTransferUpdate.Status.SUCCESS) {
                 dialog.setCancelable(true)
-                FilesFetcher.saveFileFromUri(
+                FilesFetcher.savePayloadAsFile(
                     payload
                 )
                 connectionEnd = true

@@ -3,6 +3,7 @@ package com.hrithik.nearbyshare.dialogs
 import android.app.AlertDialog
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.nearby.Nearby
 import com.google.android.gms.nearby.connection.*
 import com.hrithik.nearbyshare.AppViewModel
+import com.hrithik.nearbyshare.MyApp
 import com.hrithik.nearbyshare.databinding.LayoutSearchingToSendBinding
 import kotlinx.coroutines.launch
 import java.io.File
@@ -36,7 +38,7 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
             .show()
 
 
-        vm.startAdvertising(connectionsClient,connectionLifecycleCallback,b)
+        startAdvertising()
 
     }
 
@@ -131,6 +133,21 @@ class AdvertisingDialog(private val vm:AppViewModel, private val context: Contex
 
 
 
+    // Start advertising the connection
+    private fun startAdvertising(){
+        vm.viewModelScope.launch {
+            connectionsClient.startAdvertising(
+                "${Build.BRAND}: ${Build.MODEL}",
+                context.packageName,
+                connectionLifecycleCallback,
+                AdvertisingOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build()
+            )
+                .addOnFailureListener {
+                    b.tvSearching.text = it.localizedMessage?:"Unknown error occurred"
+                }
+        }
+
+    }
 
 
 }

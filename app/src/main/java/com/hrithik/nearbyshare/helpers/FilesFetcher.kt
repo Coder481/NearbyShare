@@ -68,7 +68,7 @@ object FilesFetcher {
         }
     }
 
-    fun saveFileFromUri(payload : Payload) {
+    fun savePayloadAsFile(payload : Payload) {
         val myDir = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
             "ReceivedFile"
